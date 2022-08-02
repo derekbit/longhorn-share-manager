@@ -16,9 +16,16 @@ RUN zypper -n install autoconf bison curl cmake doxygen make git gcc-c++ flex Me
     tar gzip dbus-1-devel lsb-release graphviz-devel libnsl-devel && \
     rm -rf /var/cache/zypp/*
 
-RUN curl -L https://github.com/longhorn/nfs-ganesha/archive/v3_20210302.tar.gz | tar zx \
+#RUN curl -L https://github.com/derekbit/nfs-ganesha/archive/refs/tags/longhorn-ganesha-v3-debug-v4.tar.gz | tar zx \
+#	  && curl -L https://github.com/nfs-ganesha/ntirpc/archive/v3.4.tar.gz | tar zx \
+#	  && mv nfs-ganesha-longhorn-ganesha-v3-debug-v4 nfs-ganesha-3.4 \
+#	  && rm -r nfs-ganesha-3.4/src/libntirpc \
+#	  && mv ntirpc-3.4 nfs-ganesha-3.4/src/libntirpc
+#WORKDIR /nfs-ganesha-3.4
+
+RUN curl -L https://github.com/derekbit/nfs-ganesha/archive/refs/tags/longhorn-ganesha-v3-debug-v5.tar.gz | tar zx \
 	  && curl -L https://github.com/nfs-ganesha/ntirpc/archive/v3.4.tar.gz | tar zx \
-	  && mv nfs-ganesha-3_20210302 nfs-ganesha-3.4 \
+	  && mv nfs-ganesha-longhorn-ganesha-v3-debug-v5 nfs-ganesha-3.4 \
 	  && rm -r nfs-ganesha-3.4/src/libntirpc \
 	  && mv ntirpc-3.4 nfs-ganesha-3.4/src/libntirpc
 WORKDIR /nfs-ganesha-3.4
@@ -34,7 +41,7 @@ RUN mkdir -p /usr/local \
     -DUSE_FSAL_KVSFS=OFF -DUSE_FSAL_CEPH=OFF -DUSE_FSAL_GPFS=OFF -DUSE_FSAL_PANFS=OFF -DUSE_FSAL_GLUSTER=OFF \
     -DUSE_GSS=NO \
     -DCMAKE_INSTALL_PREFIX=/usr/local src/ \
-    && sed -i 's|@SYSSTATEDIR@/lib/nfs/ganesha|/tmp|' src/include/config-h.in.cmake \
+    && sed -i 's|@SYSSTATEDIR@/lib/nfs/ganesha|/mnt/nfs|' src/include/config-h.in.cmake \
 	  && make \
 	  && make install
 RUN mkdir -p /ganesha-extra \

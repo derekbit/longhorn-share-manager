@@ -27,16 +27,16 @@ NFS_Core_Param
     Enable_UDP = false;   
     fsid_device = false;
     Protocols = 4;
+	Clustered = false;
 }
 
 # uncomment to enable debug logging
-# LOG { COMPONENTS { NFS_V4 = FULL_DEBUG; } }
+LOG { COMPONENTS { ALL = FULL_DEBUG; } }
 
 NFSV4
 {
     Lease_Lifetime = 60;
-    Graceless = true;
-    Grace_Period = 0;
+    Grace_Period = 90;
     Minor_Versions = 1, 2;
     RecoveryBackend = fs_ng;
     Only_Numeric_Owners = true;
