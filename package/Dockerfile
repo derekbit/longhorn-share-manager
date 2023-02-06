@@ -16,12 +16,12 @@ RUN zypper -n install autoconf bison curl cmake doxygen make git gcc-c++ flex Me
     tar gzip dbus-1-devel lsb-release graphviz-devel libnsl-devel libcurl-devel libjson-c-devel libacl-devel && \
     rm -rf /var/cache/zypp/*
 
-RUN curl -L https://github.com/longhorn/nfs-ganesha/archive/refs/tags/v4_20221216.tar.gz | tar zx \
-	  && curl -L https://github.com/nfs-ganesha/ntirpc/archive/v4.2.tar.gz | tar zx \
-	  && mv nfs-ganesha-4_20221216 nfs-ganesha-4.2 \
-	  && rm -r nfs-ganesha-4.2/src/libntirpc \
-	  && mv ntirpc-4.2 nfs-ganesha-4.2/src/libntirpc
-WORKDIR /nfs-ganesha-4.2
+RUN curl -L https://github.com/derekbit/nfs-ganesha/archive/refs/tags/v3_20230107.tar.gz | tar zx \
+	  && curl -L https://github.com/nfs-ganesha/ntirpc/archive/v3.5.tar.gz | tar zx \
+	  && mv nfs-ganesha-3_20230107 nfs-ganesha-3.5 \
+	  && rm -r nfs-ganesha-3.5/src/libntirpc \
+	  && mv ntirpc-3.5 nfs-ganesha-3.5/src/libntirpc
+WORKDIR /nfs-ganesha-3.5
 
 
 # build ganesha only supporting nfsv4 and vfs
