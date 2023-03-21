@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -13,14 +12,13 @@ import (
 
 	"github.com/longhorn/longhorn-share-manager/pkg/crypto"
 	"github.com/longhorn/longhorn-share-manager/pkg/server/nfs"
+	"github.com/longhorn/longhorn-share-manager/pkg/types"
 	"github.com/longhorn/longhorn-share-manager/pkg/volume"
 )
 
 const waitBetweenChecks = time.Second * 5
 const healthCheckInterval = time.Second * 10
-const exportPath = "/export"
 const configPath = "/tmp/vfs.conf"
-const DevPath = "/dev"
 
 type ShareManager struct {
 	logger logrus.FieldLogger
@@ -40,7 +38,7 @@ func NewShareManager(logger logrus.FieldLogger, volume volume.Volume) (*ShareMan
 	}
 	m.context, m.shutdown = context.WithCancel(context.Background())
 
-	nfsServer, err := nfs.NewServer(logger, configPath, exportPath, volume.Name)
+	nfsServer, err := nfs.NewServer(logger, configPath, types.ExportPath, volume.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +48,8 @@ func NewShareManager(logger logrus.FieldLogger, volume volume.Volume) (*ShareMan
 
 func (m *ShareManager) Run() error {
 	vol := m.Volume
-	mountPath := filepath.Join(exportPath, vol.Name)
-	devicePath := filepath.Join(DevPath, "longhorn", vol.Name)
+	mountPath := types.GetMountPath(vol.Name)
+	devicePath := types.GetVolumeDevicePath(vol.Name, false)
 
 	defer func() {
 		// if the server is exiting, try to unmount & teardown device before we terminate the container
@@ -132,7 +130,7 @@ func setupDevice(logger logrus.FieldLogger, vol volume.Volume, devicePath string
 			}
 		}
 
-		cryptoDevice := crypto.VolumeMapper(vol.Name)
+		cryptoDevice := types.GetVolumeDevicePath(vol.Name, true)
 		logger.Infof("Volume %s requires crypto device %s", vol.Name, cryptoDevice)
 		if err := crypto.OpenVolume(vol.Name, devicePath, vol.Passphrase); err != nil {
 			logger.WithError(err).Error("Failed to open encrypted volume")
@@ -148,7 +146,7 @@ func setupDevice(logger logrus.FieldLogger, vol volume.Volume, devicePath string
 
 func tearDownDevice(logger logrus.FieldLogger, vol volume.Volume) error {
 	// close any matching crypto device for this volume
-	cryptoDevice := crypto.VolumeMapper(vol.Name)
+	cryptoDevice := types.GetVolumeDevicePath(vol.Name, true)
 	if isOpen, err := crypto.IsDeviceOpen(cryptoDevice); err != nil {
 		return err
 	} else if isOpen {
@@ -217,7 +215,7 @@ func (m *ShareManager) runHealthCheck() {
 }
 
 func (m *ShareManager) hasHealthyVolume() bool {
-	mountPath := filepath.Join(exportPath, m.Volume.Name)
+	mountPath := types.GetMountPath(m.Volume.Name)
 	err := exec.CommandContext(m.context, "ls", mountPath).Run()
 	return err == nil
 }
