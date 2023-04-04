@@ -113,9 +113,9 @@ func (m *ShareManager) Run() error {
 func setupDevice(logger logrus.FieldLogger, vol volume.Volume, devicePath string) (string, error) {
 	diskFormat, err := volume.GetDiskFormat(devicePath)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to determine filesystem format of volume error")
+		return "", errors.Wrap(err, "failed to determine filesystem format")
 	}
-	logger.Debugf("Volume %v device %v contains filesystem of format %v", vol.Name, devicePath, diskFormat)
+	logger.Infof("Volume %v device %v contains filesystem of format %v", vol.Name, devicePath, diskFormat)
 
 	if vol.IsEncrypted() || diskFormat == "luks" {
 		if vol.Passphrase == "" {
