@@ -86,7 +86,16 @@ func SetPermissions(mountPath string, mode os.FileMode) error {
 
 func UnmountVolume(mountPath string) error {
 	mounter := mount.New("")
-	return mount.CleanupMountPoint(mountPath, mounter, true)
+
+	forceUnmounter, ok := mounter.(mount.MounterForceUnmounter)
+
+	if ok {
+		logrus.Infof("Trying to force clean up mount point %v", mountPath)
+		return mount.CleanupMountWithForce(mountPath, forceUnmounter, false, forceCleanupMountTimeout)
+	}
+
+	logrus.Infof("Trying to clean up mount point %v", mountPath)
+	return mount.CleanupMountPoint(mountPath, forceUnmounter, false)
 }
 
 // makeDir creates a new directory.
