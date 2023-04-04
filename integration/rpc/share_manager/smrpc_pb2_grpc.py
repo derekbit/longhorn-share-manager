@@ -15,6 +15,16 @@ class ShareManagerServiceStub(object):
     Args:
       channel: A grpc.Channel.
     """
+    self.FilesystemMount = channel.unary_unary(
+        '/ShareManagerService/FilesystemMount',
+        request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+        response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        )
+    self.FilesystemMountStatus = channel.unary_unary(
+        '/ShareManagerService/FilesystemMountStatus',
+        request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+        response_deserializer=smrpc__pb2.FilesystemMountStatusResponse.FromString,
+        )
     self.FilesystemTrim = channel.unary_unary(
         '/ShareManagerService/FilesystemTrim',
         request_serializer=smrpc__pb2.FilesystemTrimRequest.SerializeToString,
@@ -26,6 +36,20 @@ class ShareManagerServiceServicer(object):
   # missing associated documentation comment in .proto file
   pass
 
+  def FilesystemMount(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def FilesystemMountStatus(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def FilesystemTrim(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -36,6 +60,16 @@ class ShareManagerServiceServicer(object):
 
 def add_ShareManagerServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
+      'FilesystemMount': grpc.unary_unary_rpc_method_handler(
+          servicer.FilesystemMount,
+          request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+          response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+      ),
+      'FilesystemMountStatus': grpc.unary_unary_rpc_method_handler(
+          servicer.FilesystemMountStatus,
+          request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+          response_serializer=smrpc__pb2.FilesystemMountStatusResponse.SerializeToString,
+      ),
       'FilesystemTrim': grpc.unary_unary_rpc_method_handler(
           servicer.FilesystemTrim,
           request_deserializer=smrpc__pb2.FilesystemTrimRequest.FromString,
