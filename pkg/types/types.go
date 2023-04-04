@@ -15,6 +15,16 @@ const (
 	ExportPath = "/export"
 )
 
+type ProgressState string
+
+const (
+	ProgressStatePending    = ProgressState("pending")
+	ProgressStateStarting   = ProgressState("starting")
+	ProgressStateInProgress = ProgressState("in_progress")
+	ProgressStateComplete   = ProgressState("complete")
+	ProgressStateError      = ProgressState("error")
+)
+
 func GetVolumeDevicePath(volumeName string, IsEncryptedDevice bool) string {
 	if IsEncryptedDevice {
 		return path.Join(MapperDevPath, volumeName)

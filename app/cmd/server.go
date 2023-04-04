@@ -84,7 +84,7 @@ func start(vol volume.Volume) error {
 
 	shutdownCh := make(chan error)
 	go func() {
-		err := manager.Run()
+		err := manager.StartNfsServer()
 		shutdownCh <- err
 	}()
 

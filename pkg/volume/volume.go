@@ -3,10 +3,16 @@ package volume
 import (
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/kubernetes/pkg/volume/util/hostutil"
 	"k8s.io/mount-utils"
 	utilexec "k8s.io/utils/exec"
+)
+
+const (
+	forceCleanupMountTimeout = 30 * time.Second
 )
 
 type Volume struct {
