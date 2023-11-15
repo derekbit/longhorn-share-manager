@@ -186,10 +186,82 @@ func (s *ShareManagerServer) Unmount(ctx context.Context, req *empty.Empty) (res
 	return &empty.Empty{}, nil
 }
 
-	err = unmount(volumeName)
+func (s *ShareManagerServer) mount(vol volume.Volume, devicePath, mountPath string) error {
+	if err := s.manager.MountVolume(s.manager.GetVolume(), devicePath, mountPath); err != nil {
+		return errors.Wrapf(err, "failed to mount volume %v", vol.Name)
+	}
+
+	return nil
+}
+
+func (s ShareManagerServer) export(vol volume.Volume) error {
+	exporter, err := nfs.NewExporter(configPath, types.ExportPath)
+	if err != nil {
+		return errors.Wrap(err, "failed to create nfs exporter")
+	}
+
+	if _, err := exporter.CreateExport(vol.Name); err != nil {
+		return errors.Wrap(err, "failed to delete nfs export")
+	}
+
+	if err := exporter.ReloadExport(); err != nil {
+		return errors.Wrap(err, "failed to reload nfs export")
+	}
+
+	return nil
+}
+
+func (s *ShareManagerServer) Mount(ctx context.Context, req *empty.Empty) (resp *empty.Empty, err error) {
+	vol := s.manager.GetVolume()
+	if vol.Name == "" {
+		s.logger.Warn("Volume name is missing")
+		return &empty.Empty{}, nil
+	}
+
+	log := s.logger.WithField("volume", vol.Name)
+
+	if !nfsServerIsRunning() {
+		log.Info("NFS server is not running, skip mounting and exporting volume")
+		return &empty.Empty{}, nil
+	}
+
+	if s.manager.ShareIsExported() {
+		return &empty.Empty{}, nil
+	}
+
+	log.Info("Mounting and exporting volume")
+
+	devicePath := types.GetVolumeDevicePath(vol.Name, false)
+	mountPath := types.GetMountPath(vol.Name)
+
+	defer func() {
+		if err != nil {
+			log.WithError(err).Errorf("Failed to mount and export volume")
+		}
+	}()
+
+	mounter := mount.New("")
+	notMounted, err := mount.IsNotMountPoint(mounter, mountPath)
+	if err != nil {
+		err = errors.Wrapf(err, "failed to check mount point %v", mountPath)
+		return &empty.Empty{}, grpcstatus.Errorf(grpccodes.Internal, err.Error())
+	}
+	if notMounted {
+		log.Info("Mounting volume")
+		err = s.mount(vol, devicePath, mountPath)
+		if err != nil {
+			return nil, grpcstatus.Error(grpccodes.Internal, err.Error())
+		}
+	}
+
+	log.Info("Exporting volume")
+	err = s.export(vol)
 	if err != nil {
 		return nil, grpcstatus.Error(grpccodes.Internal, err.Error())
 	}
+
+	log.Info("Volume is mounted and exported")
+	s.manager.SetShareExported(true)
 
 	return &empty.Empty{}, nil
 }
