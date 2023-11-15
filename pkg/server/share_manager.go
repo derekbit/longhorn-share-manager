@@ -14,6 +14,7 @@ import (
 	"github.com/longhorn/longhorn-share-manager/pkg/crypto"
 	"github.com/longhorn/longhorn-share-manager/pkg/server/nfs"
 	"github.com/longhorn/longhorn-share-manager/pkg/types"
+	"github.com/longhorn/longhorn-share-manager/pkg/util"
 	"github.com/longhorn/longhorn-share-manager/pkg/volume"
 )
 
@@ -247,7 +248,7 @@ func (m *ShareManager) hasHealthyVolume() error {
 	mounter := mount.New("")
 	mountPoints, _ := mounter.List()
 	for _, mp := range mountPoints {
-		if mp.Path == mountPath && isMountPointReadOnly(mp) {
+		if mp.Path == mountPath && util.IsMountPointReadOnly(mp) {
 			return fmt.Errorf(ReadOnlyErr, mountPath)
 		}
 	}

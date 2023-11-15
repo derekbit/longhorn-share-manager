@@ -1,6 +1,10 @@
 package util
 
-import "golang.org/x/sys/unix"
+import (
+	"golang.org/x/sys/unix"
+
+	"k8s.io/mount-utils"
+)
 
 // DeviceNumber represents a combined major:minor device number.
 type DeviceNumber uint64
@@ -13,4 +17,14 @@ func GetDeviceNumber(path string) (DeviceNumber, error) {
 		return 0, err
 	}
 	return DeviceNumber(stat.Rdev), nil
+}
+
+// IsMountPointReadOnly returns true if the mount point is read-only.
+func IsMountPointReadOnly(mp mount.MountPoint) bool {
+	for _, opt := range mp.Opts {
+		if opt == "ro" {
+			return true
+		}
+	}
+	return false
 }
